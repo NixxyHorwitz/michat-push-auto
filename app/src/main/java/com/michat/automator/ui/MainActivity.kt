@@ -111,7 +111,8 @@ class MainActivity : AppCompatActivity() {
         LicenseManager.onLicenseChanged = { onLicenseChanged() }
         if (!LicenseManager.isValid(this)) { lockApp(); return }
         applyLicense()
-        LicenseManager.refreshIfDue(this)
+        // Selalu verifikasi ke server saat app dibuka/kembali: key yang dihapus/dicabut langsung mengunci app
+        LicenseManager.refreshIfDue(this, force = true)
         refreshPermissionState()
         // Beri sistem waktu mengikat layanan sendiri dulu; jika tetap tidak jalan, pulihkan otomatis
         contentMain.postDelayed({

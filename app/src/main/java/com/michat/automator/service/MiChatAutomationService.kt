@@ -32,7 +32,7 @@ class MiChatAutomationService : AccessibilityService() {
         private const val MAX_ICON_SHOT_ATTEMPTS = 4
         private const val MICHAT_PACKAGE = "com.michatapp.im"
         private const val UNKNOWN_SCREEN_TIMEOUT_MS = 2500L
-        private const val LICENSE_CHECK_INTERVAL_MS = 60_000L
+        private const val LICENSE_CHECK_INTERVAL_MS = 3 * 60_000L
         private val KNOWN_SCREEN_IDS = listOf(
             "com.michatapp.im:id/request_information",
             "com.michatapp.im:id/scv_user_detail",
@@ -170,14 +170,16 @@ class MiChatAutomationService : AccessibilityService() {
     private fun evaluateAndAct(root: AccessibilityNodeInfo) {
         if (!isRunning || isWaitingCooldown) return
 
+        // Cek ke server tiap interval selama bot jalan; jika ditolak, token langsung dihapus
         if (now0() - lastLicenseCheck > LICENSE_CHECK_INTERVAL_MS) {
             lastLicenseCheck = now0()
-            LicenseManager.refreshIfDue(applicationContext)
-            if (!LicenseManager.isValid(applicationContext)) {
-                updateStatus("🔒 Lisensi habis/tidak aktif. Bot dihentikan.")
-                stopBot()
-                return
-            }
+            LicenseManager.refreshIfDue(applicationContext, force = true)
+        }
+        // Cek lokal tiap putaran (tanpa internet): habis/dihapus/dicabut → bot berhenti seketika
+        if (!LicenseManager.isValid(applicationContext)) {
+            updateStatus("🔒 Lisensi habis/tidak aktif. Bot dihentikan.")
+            stopBot()
+            return
         }
 
         if (sentCount >= maxTargetCount) {

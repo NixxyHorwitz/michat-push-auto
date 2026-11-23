@@ -33,7 +33,8 @@ object LicenseManager {
 
     private const val TAG = "License"
     private const val PREFS = "nx_license"
-    private const val REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000L // cek ulang ke server tiap 6 jam
+    private const val REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000L // cek ulang terjadwal tiap 6 jam
+    private const val MIN_FORCED_INTERVAL_MS = 20_000L // jeda minimum antar cek paksa (hindari spam server)
 
     data class Features(
         val customMessage: Boolean,
@@ -63,6 +64,7 @@ object LicenseManager {
 
     @Volatile private var cached: License? = null
     @Volatile private var checking = false
+    @Volatile private var lastCheckAt = 0L
 
     var onLicenseChanged: (() -> Unit)? = null
 
@@ -164,9 +166,11 @@ object LicenseManager {
         val key = savedKey(ctx)
         if (key == null || checking) { callback?.invoke(null); return }
         val lic = current(ctx)
-        val due = force || lic == null || trustedNow(ctx) - lic.issuedAt >= REFRESH_INTERVAL_MS ||
-            status(ctx) != Status.VALID
+        val sinceLast = SystemClock.elapsedRealtime() - lastCheckAt
+        val due = (force && sinceLast >= MIN_FORCED_INTERVAL_MS) || lic == null ||
+            trustedNow(ctx) - lic.issuedAt >= REFRESH_INTERVAL_MS || status(ctx) != Status.VALID
         if (!due) { callback?.invoke(null); return }
+        lastCheckAt = SystemClock.elapsedRealtime()
         val body = JSONObject()
             .put("key", key)
             .put("deviceId", deviceId(ctx))
