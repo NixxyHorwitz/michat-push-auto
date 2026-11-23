@@ -1,10 +1,20 @@
-import { neon } from "@neondatabase/serverless";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL belum diset");
+// Koneksi dibuat saat query pertama (bukan saat file dimuat), supaya `next build`
+// tetap berhasil walaupun DATABASE_URL belum diset di lingkungan build.
+let client: NeonQueryFunction<false, false> | null = null;
+
+function db(): NeonQueryFunction<false, false> {
+  if (!client) {
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("DATABASE_URL belum diset (Vercel → Settings → Environment Variables)");
+    client = neon(url);
+  }
+  return client;
 }
 
-export const sql = neon(process.env.DATABASE_URL);
+export const sql = ((strings: TemplateStringsArray, ...values: unknown[]) =>
+  db()(strings, ...values)) as unknown as NeonQueryFunction<false, false>;
 
 export type Features = {
   custom_message?: boolean;
