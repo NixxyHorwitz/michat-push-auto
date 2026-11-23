@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Izin untuk menampilkan Floating Widget di atas aplikasi lain -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Diberikan manual sekali lewat adb, agar app bisa mengaktifkan ulang aksesibilitasnya sendiri -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- Android 11+: wajib agar bisa meluncurkan MiChat dari aplikasi ini -->
+    <queries>
+        <package android:name="com.michatapp.im" />
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="MiChat Push Auto"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MiChatAutomator">
+
+        <!-- Activity Utama Konfigurasi -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:theme="@style/Theme.MiChatAutomator.Main"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Activity Riwayat Pengiriman -->
+        <activity
+            android:name=".ui.HistoryActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MiChatAutomator" />
+
+        <!-- Layanan Aksesibilitas untuk Otomasi Layar MiChat -->
+        <service
+            android:name=".service.MiChatAutomationService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Floating Overlay Service untuk Kontrol Start/Stop di Layar -->
+        <service
+            android:name=".service.FloatingOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Kontrol melayang untuk bot otomasi aksesibilitas" />
+        </service>
+
+        <!-- Setelah aplikasi di-update/install ulang: pastikan aksesibilitas aktif lagi -->
+        <receiver
+            android:name=".service.A11yRepairReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

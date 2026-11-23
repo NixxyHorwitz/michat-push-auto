@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nx_bg">#0D1017</color>
+    <color name="nx_surface">#161A23</color>
+    <color name="nx_surface_2">#1E2330</color>
+    <color name="nx_stroke">#272E3D</color>
+    <color name="nx_primary">#00E5A0</color>
+    <color name="nx_primary_dim">#2600E5A0</color>
+    <color name="nx_on_primary">#04140E</color>
+    <color name="nx_accent">#8B6CFF</color>
+    <color name="nx_pink">#FF5C9A</color>
+    <color name="nx_blue">#4DA3FF</color>
+    <color name="nx_warn">#FFB547</color>
+    <color name="nx_danger">#FF5C6C</color>
+    <color name="nx_text">#F3F5F9</color>
+    <color name="nx_text_2">#A0A8B8</color>
+    <color name="nx_text_3">#687082</color>
+</resources>

@@ -1,0 +1,27 @@
+# Android / Gradle
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+captures/
+.idea/
+*.iml
+
+# Server lisensi
+license-server/node_modules/
+license-server/.next/
+license-server/.vercel/
+**/.env
+**/.env.*
+!**/.env.example
+
+# Screenshot & dump UI dari HP (berisi nama/foto pengguna MiChat lain)
+/*.png
+/*.xml
+
+# Lokal
+.claude/

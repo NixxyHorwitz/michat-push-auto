@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MiChat Push Auto</string>
+    <string name="accessibility_desc">Layanan untuk mengotomasi pengiriman pesan sapaan di MiChat.</string>
+</resources>

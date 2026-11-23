@@ -1,0 +1,94 @@
+<resources>
+    <!-- Tema dasar (Riwayat & service overlay) -->
+    <style name="Theme.MiChatAutomator" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">@color/nx_primary</item>
+        <item name="colorPrimaryDark">@color/nx_bg</item>
+        <item name="colorAccent">@color/nx_primary</item>
+        <item name="android:windowBackground">@color/nx_bg</item>
+        <item name="android:statusBarColor">@color/nx_bg</item>
+        <item name="android:navigationBarColor">@color/nx_bg</item>
+    </style>
+
+    <!-- Tema modern untuk layar utama (Material Components) -->
+    <style name="Theme.MiChatAutomator.Main" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/nx_primary</item>
+        <item name="colorPrimaryVariant">@color/nx_primary</item>
+        <item name="colorOnPrimary">@color/nx_on_primary</item>
+        <item name="colorSecondary">@color/nx_accent</item>
+        <item name="colorOnSecondary">@color/nx_text</item>
+        <item name="colorSurface">@color/nx_surface</item>
+        <item name="colorOnSurface">@color/nx_text</item>
+        <item name="android:colorBackground">@color/nx_bg</item>
+        <item name="android:windowBackground">@color/nx_bg</item>
+        <item name="android:statusBarColor">@color/nx_bg</item>
+        <item name="android:navigationBarColor">@color/nx_bg</item>
+        <item name="android:textColorPrimary">@color/nx_text</item>
+        <item name="android:textColorSecondary">@color/nx_text_2</item>
+        <item name="android:textColorHint">@color/nx_text_3</item>
+    </style>
+
+    <style name="Nx" />
+
+    <style name="Nx.SectionTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/nx_text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Nx.SectionSub">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/nx_text_3</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+    <style name="Nx.Card">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:padding">18dp</item>
+        <item name="android:layout_marginTop">14dp</item>
+    </style>
+
+    <style name="Nx.Switch">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textColor">@color/nx_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="thumbTint">@color/switch_thumb</item>
+        <item name="trackTint">@color/switch_track</item>
+    </style>
+
+    <style name="Nx.SwitchDesc">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/nx_text_3</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_marginEnd">64dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="Nx.Toggle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">58dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:textColor">@color/toggle_text</item>
+        <item name="backgroundTint">@color/toggle_bg</item>
+        <item name="strokeColor">@color/toggle_stroke</item>
+        <item name="rippleColor">@color/nx_primary_dim</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+</resources>

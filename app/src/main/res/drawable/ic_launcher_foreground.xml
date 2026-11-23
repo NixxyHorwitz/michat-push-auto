@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gelembung chat mint + petir (auto sapa) + titik notifikasi pink. Konten berada di safe zone 66dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Bayangan gelembung -->
+    <path
+        android:fillColor="#33000000"
+        android:pathData="M41,33H69A12,12 0,0 1,81 45V62A12,12 0,0 1,69 74H50L38,84L40,74H41A12,12 0,0 1,29 62V45A12,12 0,0 1,41 33Z" />
+
+    <!-- Gelembung chat -->
+    <path android:pathData="M40,30H68A12,12 0,0 1,80 42V59A12,12 0,0 1,68 71H49L37,81L39,71H40A12,12 0,0 1,28 59V42A12,12 0,0 1,40 30Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="28"
+                android:startY="30"
+                android:endX="80"
+                android:endY="81">
+                <item android:offset="0" android:color="#FF3DFFC0" />
+                <item android:offset="1" android:color="#FF00C98C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Petir -->
+    <path
+        android:fillColor="#FF0D1017"
+        android:pathData="M58,36L43.5,54.5H52.5L49,66L63.5,47.5H54.5L58,36Z" />
+
+    <!-- Titik notifikasi pink -->
+    <path
+        android:fillColor="#FF2C1A55"
+        android:pathData="M73,36m-7.5,0a7.5,7.5 0,1 1,15 0a7.5,7.5 0,1 1,-15 0" />
+    <path
+        android:fillColor="#FFFF5C9A"
+        android:pathData="M73,36m-5.5,0a5.5,5.5 0,1 1,11 0a5.5,5.5 0,1 1,-11 0" />
+</vector>

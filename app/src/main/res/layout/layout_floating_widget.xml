@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- 1. MODE EXPANDED (PANEL LENGKAP) -->
+    <LinearLayout
+        android:id="@+id/layout_floating_expanded"
+        android:layout_width="265dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_floating_card"
+        android:padding="12dp"
+        android:visibility="visible">
+
+        <!-- Header: Drag Handle, Title & Minimize / Close -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
+
+            <!-- Drag Grip Area -->
+            <LinearLayout
+                android:id="@+id/layout_drag_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⠿"
+                    android:textColor="#7A869A"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MiChat Auto"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Tombol Minimize / Ciutkan -->
+            <Button
+                android:id="@+id/btn_minimize_widget"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:text="—"
+                android:textSize="13sp"
+                android:textColor="#B0BEC5"
+                android:background="@drawable/btn_secondary_dark"
+                android:layout_marginEnd="6dp"
+                android:padding="0dp" />
+
+            <!-- Tombol Tutup Overlay -->
+            <Button
+                android:id="@+id/btn_close_widget"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:text="✕"
+                android:textSize="12sp"
+                android:textColor="#FF5252"
+                android:background="@drawable/btn_secondary_dark"
+                android:padding="0dp" />
+        </LinearLayout>
+
+        <!-- Status & Counter Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_pill_status"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_widget_status_dot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●"
+                    android:textColor="#78909C"
+                    android:textSize="11sp"
+                    android:layout_marginEnd="5dp" />
+
+                <TextView
+                    android:id="@+id/tv_widget_status_badge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="SIAP"
+                    android:textColor="#CFD8DC"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_widget_counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 / 20"
+                    android:textColor="#00E5FF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/pb_widget_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="4dp"
+                android:max="20"
+                android:progress="0"
+                android:progressDrawable="@drawable/progress_bar_custom" />
+
+            <!-- Status Ticker Teks -->
+            <TextView
+                android:id="@+id/tv_widget_status_ticker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Siap dijalankan"
+                android:textColor="#90A4AE"
+                android:textSize="10.5sp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <!-- Filter Chips Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/tv_tag_gender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="♀ Perempuan"
+                android:textColor="#FF4081"
+                android:textSize="10sp"
+                android:background="@drawable/bg_chip_tag"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/tv_tag_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡ Sapa Saja"
+                android:textColor="#00E676"
+                android:textSize="10sp"
+                android:background="@drawable/bg_chip_tag"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/tv_tag_delay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏱ 3-6s"
+                android:textColor="#FFD54F"
+                android:textSize="10sp"
+                android:background="@drawable/bg_chip_tag"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp" />
+        </LinearLayout>
+
+        <!-- Tombol Utama START / STOP -->
+        <Button
+            android:id="@+id/btn_toggle_start"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="▶  MULAI BOT"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_gradient_start"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Baris Tombol Aksi: Riwayat & Reset -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_widget_history"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1"
+                android:text="📜 Riwayat (0)"
+                android:textSize="10.5sp"
+                android:textColor="#00E5FF"
+                android:background="@drawable/btn_secondary_dark"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btn_widget_reset"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="0.8"
+                android:text="🔄 Reset"
+                android:textSize="10.5sp"
+                android:textColor="#CFD8DC"
+                android:background="@drawable/btn_secondary_dark" />
+        </LinearLayout>
+
+        <!-- Mini Riwayat Dropdown Container (Expandable) -->
+        <LinearLayout
+            android:id="@+id/layout_widget_mini_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_history_card"
+            android:padding="8dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Terakhir Disapa:"
+                    android:textColor="#90A4AE"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_btn_open_full_history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lihat Semua ↗"
+                    android:textColor="#00E5FF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="2dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_mini_history_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Belum ada riwayat"
+                android:textColor="#ECEFF1"
+                android:textSize="10.5sp"
+                android:lineSpacingExtra="3dp"
+                android:maxLines="4" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 2. MODE MINIMIZED (COMPACT BUBBLE / PILL) -->
+    <LinearLayout
+        android:id="@+id/layout_floating_bubble"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_floating_bubble"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:visibility="gone">
+
+        <!-- Bubble Drag Grip -->
+        <LinearLayout
+            android:id="@+id/layout_bubble_drag"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingEnd="8dp">
+
+            <!-- Status Dot & Counter -->
+            <TextView
+                android:id="@+id/tv_bubble_status_dot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="●"
+                android:textColor="#00E676"
+                android:textSize="12sp"
+                android:layout_marginEnd="5dp" />
+
+            <TextView
+                android:id="@+id/tv_bubble_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/20"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Mini Toggle Play/Pause Button -->
+        <Button
+            android:id="@+id/btn_bubble_toggle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:text="▶"
+            android:textSize="11sp"
+            android:textColor="#00E676"
+            android:background="@drawable/btn_secondary_dark"
+            android:padding="0dp"
+            android:layout_marginEnd="6dp" />
+
+        <!-- Expand Button -->
+        <Button
+            android:id="@+id/btn_bubble_expand"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:text="⤢"
+            android:textSize="12sp"
+            android:textColor="#00E5FF"
+            android:background="@drawable/btn_secondary_dark"
+            android:padding="0dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

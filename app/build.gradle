@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.michat.automator'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.michat.automator"
+        minSdk 24
+        targetSdk 34
+        versionCode 2
+        versionName "1.2"
+
+        // Public key untuk memverifikasi token lisensi (pasangannya ada di server, JANGAN taruh private key di sini)
+        buildConfigField "String", "LICENSE_PUBLIC_KEY", "\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKQkOXcRgirgnFaxvOdLjGMKTWddRbOjOl0pRS4aDVu94cTnwk5ZQJnZd1J7oz6TmsJZwgZ5mYUGInxiGaS77dw==\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        debug {
+            // Tes lokal: jalankan server di laptop lalu `adb reverse tcp:3077 tcp:3077`
+            buildConfigField "String", "LICENSE_SERVER_URL", "\"http://127.0.0.1:3077\""
+        }
+        release {
+            // Server lisensi produksi (Vercel)
+            buildConfigField "String", "LICENSE_SERVER_URL", "\"https://michatadminpanel.vercel.app\""
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+}
