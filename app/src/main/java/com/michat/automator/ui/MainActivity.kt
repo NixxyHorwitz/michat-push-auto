@@ -113,6 +113,8 @@ class MainActivity : AppCompatActivity() {
         applyLicense()
         // Selalu verifikasi ke server saat app dibuka/kembali: key yang dihapus/dicabut langsung mengunci app
         LicenseManager.refreshIfDue(this, force = true)
+        contentMain.removeCallbacks(licenseTicker)
+        contentMain.postDelayed(licenseTicker, 60_000L)
         refreshPermissionState()
         // Beri sistem waktu mengikat layanan sendiri dulu; jika tetap tidak jalan, pulihkan otomatis
         contentMain.postDelayed({
@@ -284,9 +286,18 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- lisensi
 
+    /** Selama layar utama terbuka, cek lisensi ke server tiap 1 menit */
+    private val licenseTicker = object : Runnable {
+        override fun run() {
+            LicenseManager.refreshIfDue(this@MainActivity, force = true)
+            contentMain.postDelayed(this, 60_000L)
+        }
+    }
+
     override fun onPause() {
         super.onPause()
         LicenseManager.onLicenseChanged = null
+        if (::contentMain.isInitialized) contentMain.removeCallbacks(licenseTicker)
     }
 
     private fun onLicenseChanged() {

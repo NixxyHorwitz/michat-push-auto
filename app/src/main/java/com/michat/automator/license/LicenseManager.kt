@@ -65,6 +65,8 @@ object LicenseManager {
     @Volatile private var cached: License? = null
     @Volatile private var checking = false
     @Volatile private var lastCheckAt = 0L
+    /** Callback yang menunggu cek yang sedang berjalan (dipanggil di main thread) */
+    private val waiters = mutableListOf<(Result?) -> Unit>()
 
     var onLicenseChanged: (() -> Unit)? = null
 
@@ -164,7 +166,10 @@ object LicenseManager {
     /** Cek ke server bila sudah waktunya (atau [force]). Hasil disampaikan lewat onLicenseChanged. */
     fun refreshIfDue(ctx: Context, force: Boolean = false, callback: ((Result?) -> Unit)? = null) {
         val key = savedKey(ctx)
-        if (key == null || checking) { callback?.invoke(null); return }
+        if (key == null) { callback?.invoke(null); return }
+        // Sedang ada cek berjalan → tunggu hasilnya, jangan kirim request ganda
+        // (dipanggil dari main thread, sama dengan thread yang mengosongkan waiters → tanpa race)
+        if (checking) { callback?.let { waiters.add(it) }; return }
         val lic = current(ctx)
         val sinceLast = SystemClock.elapsedRealtime() - lastCheckAt
         val due = (force && sinceLast >= MIN_FORCED_INTERVAL_MS) || lic == null ||
@@ -240,6 +245,9 @@ object LicenseManager {
             checking = false
             main.post {
                 callback(result)
+                val pending = waiters.toList()
+                waiters.clear()
+                pending.forEach { it(result) }
                 notifyChanged()
             }
         }

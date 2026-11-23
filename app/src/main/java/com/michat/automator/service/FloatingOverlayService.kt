@@ -43,6 +43,9 @@ class FloatingOverlayService : Service() {
 
         /** Posisi widget di layar (untuk menghindari gesture bot menabrak widget) */
         fun widgetBoundsOnScreen(): Rect? = instance?.getWidgetBounds()
+
+        /** Interval cek lisensi selama widget tampil */
+        private const val LICENSE_TICK_MS = 2 * 60_000L
     }
 
     private fun getWidgetBounds(): Rect? {
@@ -173,6 +176,7 @@ class FloatingOverlayService : Service() {
         setupListeners()
         setupDragTouch()
         refreshFromSettings()
+        licenseHandler.postDelayed(licenseTicker, LICENSE_TICK_MS)
 
         // Callback listener dari Automation Service
         MiChatAutomationService.statusListener = { status, count ->
@@ -241,10 +245,10 @@ class FloatingOverlayService : Service() {
             } else {
                 if (MiChatAutomationService.isRunning) {
                     autoService.stopBot()
+                    syncRunningState(false)
                 } else {
-                    autoService.startBot()
+                    verifyLicenseThenStart(autoService)
                 }
-                syncRunningState(MiChatAutomationService.isRunning)
             }
         }
 
@@ -347,6 +351,69 @@ class FloatingOverlayService : Service() {
             tvBubbleStatusDot.setTextColor(Color.parseColor("#00E676"))
         } else {
             syncRunningState(false)
+        }
+    }
+
+    // ------------------------------------------------------------------ lisensi
+
+    private val licenseHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var verifyingLicense = false
+    private val LOCK_CODES = setOf("revoked", "expired", "invalid", "not_activated")
+
+    /** Setiap tombol Mulai ditekan: verifikasi key ke server dulu, baru jalankan bot */
+    private fun verifyLicenseThenStart(svc: MiChatAutomationService) {
+        if (verifyingLicense) return
+        verifyingLicense = true
+        btnToggleStart.isEnabled = false
+        btnBubbleToggle.isEnabled = false
+        tvStatusTicker.text = "🔐 Memeriksa lisensi…"
+        com.michat.automator.license.LicenseManager.refreshIfDue(this, force = true) { res ->
+            verifyingLicense = false
+            btnToggleStart.isEnabled = true
+            btnBubbleToggle.isEnabled = true
+            val lm = com.michat.automator.license.LicenseManager
+            when {
+                res is com.michat.automator.license.LicenseManager.Result.Fail && res.code in LOCK_CODES ->
+                    showLicenseLocked(res.message)
+                !lm.isValid(this) ->
+                    showLicenseLocked(lm.lastError(this) ?: "Lisensi tidak aktif")
+                else -> {
+                    svc.startBot()
+                    syncRunningState(MiChatAutomationService.isRunning)
+                    if (res is com.michat.automator.license.LicenseManager.Result.Fail && res.code == "network") {
+                        tvStatusTicker.text = "⚠️ Offline — memakai lisensi tersimpan"
+                    }
+                }
+            }
+        }
+    }
+
+    /** Cek rutin selama widget tampil (bot jalan maupun tidak) */
+    private val licenseTicker = object : Runnable {
+        override fun run() {
+            val lm = com.michat.automator.license.LicenseManager
+            lm.refreshIfDue(this@FloatingOverlayService, force = true) { res ->
+                if (res is com.michat.automator.license.LicenseManager.Result.Fail && res.code in LOCK_CODES ||
+                    !lm.isValid(this@FloatingOverlayService)) {
+                    if (MiChatAutomationService.isRunning) MiChatAutomationService.instance?.stopBot()
+                    showLicenseLocked((res as? com.michat.automator.license.LicenseManager.Result.Fail)?.message
+                        ?: lm.lastError(this@FloatingOverlayService) ?: "Lisensi tidak aktif")
+                }
+            }
+            licenseHandler.postDelayed(this, LICENSE_TICK_MS)
+        }
+    }
+
+    private fun showLicenseLocked(message: String) {
+        syncRunningState(false)
+        tvStatusBadge.text = "TERKUNCI"
+        tvStatusBadge.setTextColor(Color.parseColor("#FF5C6C"))
+        tvStatusDot.setTextColor(Color.parseColor("#FF5C6C"))
+        tvBubbleStatusDot.setTextColor(Color.parseColor("#FF5C6C"))
+        tvStatusTicker.text = "🔒 $message — ketuk untuk aktivasi"
+        tvStatusTicker.setOnClickListener {
+            startActivity(Intent(this, com.michat.automator.ui.MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
         }
     }
 
@@ -573,6 +640,7 @@ class FloatingOverlayService : Service() {
     }
 
     override fun onDestroy() {
+        licenseHandler.removeCallbacksAndMessages(null)
         debugMarkerReceiver?.let { try { unregisterReceiver(it) } catch (_: Throwable) {} }
         super.onDestroy()
         MiChatAutomationService.statusListener = null
