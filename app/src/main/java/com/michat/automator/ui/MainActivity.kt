@@ -37,6 +37,7 @@ import com.michat.automator.service.FloatingOverlayService
 import com.michat.automator.service.MiChatAutomationService
 import com.michat.automator.service.MiChatAutomationService.TargetGender
 import com.michat.automator.util.AccessibilityHelper
+import com.michat.automator.license.LicenseManager
 import java.util.Random
 
 class MainActivity : AppCompatActivity() {
@@ -86,6 +87,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_MiChatAutomator_Main)
         super.onCreate(savedInstanceState)
+        // Gerbang lisensi: tanpa lisensi valid, app hanya menampilkan layar aktivasi
+        if (!LicenseManager.isValid(this)) {
+            ActivationActivity.open(this)
+            finish()
+            return
+        }
         setContentView(R.layout.activity_main)
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
 
@@ -93,12 +100,18 @@ class MainActivity : AppCompatActivity() {
         applyResponsiveWidth()
         restoreSettings()
         setupInteractions()
+        applyLicense()
         refreshDerivedLabels()
         playEntranceAnimation()
     }
 
     override fun onResume() {
         super.onResume()
+        if (!::btnLaunch.isInitialized) return
+        LicenseManager.onLicenseChanged = { onLicenseChanged() }
+        if (!LicenseManager.isValid(this)) { lockApp(); return }
+        applyLicense()
+        LicenseManager.refreshIfDue(this)
         refreshPermissionState()
         // Beri sistem waktu mengikat layanan sendiri dulu; jika tetap tidak jalan, pulihkan otomatis
         contentMain.postDelayed({
@@ -264,7 +277,84 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnLaunch.setOnClickListener { launchBot() }
+        findViewById<View>(R.id.row_license).setOnClickListener { showLicenseDialog() }
         updateMessagePreview()
+    }
+
+    // ---------------------------------------------------------------- lisensi
+
+    override fun onPause() {
+        super.onPause()
+        LicenseManager.onLicenseChanged = null
+    }
+
+    private fun onLicenseChanged() {
+        if (isFinishing) return
+        if (!LicenseManager.isValid(this)) lockApp() else applyLicense()
+    }
+
+    private fun lockApp() {
+        MiChatAutomationService.instance?.stopBot()
+        ActivationActivity.open(this)
+        finish()
+    }
+
+    /** Terapkan fitur paket: kunci opsi yang tidak termasuk & batasi limit sapaan */
+    private fun applyLicense() {
+        val lic = LicenseManager.current(this) ?: return
+        val f = lic.features
+        findViewById<TextView>(R.id.tv_license_plan).text = "💎 ${lic.planName}"
+        findViewById<TextView>(R.id.tv_license_remaining).text = LicenseManager.remainingText(this)
+
+        swAnalyzeIcon.isEnabled = f.genderIcon
+        swAnalyzeIcon.text = if (f.genderIcon) "Cek ikon gender di profil" else "Cek ikon gender di profil 🔒"
+        if (!f.genderIcon) swAnalyzeIcon.isChecked = false
+
+        swDefaultGreeting.isEnabled = f.customMessage
+        swDefaultGreeting.text = if (f.customMessage) "Pakai sapaan bawaan MiChat" else "Pakai sapaan bawaan (pesan custom 🔒)"
+        if (!f.customMessage) swDefaultGreeting.isChecked = true
+
+        val max = f.maxTarget.coerceAtLeast(2).toFloat()
+        if (sliderTarget.value > max) sliderTarget.value = max
+        sliderTarget.valueTo = max
+        refreshDerivedLabels()
+    }
+
+    private fun showLicenseDialog() {
+        val lic = LicenseManager.current(this) ?: return
+        val f = lic.features
+        val masked = lic.key.take(8) + "••••-" + lic.key.takeLast(4)
+        val exp = lic.expiresAt?.let {
+            java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale("id", "ID")).format(java.util.Date(it))
+        } ?: "Permanen"
+        val yes = "✓"; val no = "🔒"
+        val msg = "Key: $masked\n" +
+            "Paket: ${lic.planName}\n" +
+            "Berlaku s/d: $exp\n" +
+            "Sisa: ${LicenseManager.remainingText(this)}\n\n" +
+            "Fitur:\n" +
+            "${if (f.genderIcon) yes else no} Cek ikon gender\n" +
+            "${if (f.customMessage) yes else no} Pesan custom\n" +
+            "• Maks. ${f.maxTarget} sapaan/sesi\n\n" +
+            "Device ID: ${LicenseManager.deviceId(this)}"
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Lisensi")
+            .setMessage(msg)
+            .setPositiveButton("Cek sekarang") { _, _ ->
+                LicenseManager.refreshIfDue(this, force = true) { res ->
+                    val text = when (res) {
+                        is LicenseManager.Result.Ok -> "Lisensi diperbarui ✓"
+                        is LicenseManager.Result.Fail -> res.message
+                        null -> "Sedang memeriksa…"
+                    }
+                    Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNeutralButton("Ganti key") { _, _ ->
+                LicenseManager.signOut(this)
+            }
+            .setNegativeButton("Tutup", null)
+            .show()
     }
 
     // ---------------------------------------------------------------- state
@@ -447,6 +537,8 @@ class MainActivity : AppCompatActivity() {
     private fun launchBot() {
         btnLaunch.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         pop(btnLaunch)
+
+        if (!LicenseManager.isValid(this)) { lockApp(); return }
 
         if (!hasOverlayPermission()) {
             shakeAndScrollTo(R.id.card_permissions)

@@ -14,6 +14,7 @@ import android.view.Display
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.michat.automator.data.HistoryManager
+import com.michat.automator.license.LicenseManager
 import com.michat.automator.util.GenderAnalyzer
 import java.util.Random
 
@@ -31,6 +32,7 @@ class MiChatAutomationService : AccessibilityService() {
         private const val MAX_ICON_SHOT_ATTEMPTS = 4
         private const val MICHAT_PACKAGE = "com.michatapp.im"
         private const val UNKNOWN_SCREEN_TIMEOUT_MS = 2500L
+        private const val LICENSE_CHECK_INTERVAL_MS = 60_000L
         private val KNOWN_SCREEN_IDS = listOf(
             "com.michatapp.im:id/request_information",
             "com.michatapp.im:id/scv_user_detail",
@@ -74,6 +76,9 @@ class MiChatAutomationService : AccessibilityService() {
     private var isWaitingCooldown = false
     private var lastActionTime = 0L
     private var unknownScreenSince = 0L
+    private var lastLicenseCheck = 0L
+
+    private fun now0() = System.currentTimeMillis()
 
     // Deteksi akhir daftar Pengguna di Sekitar
     private var lastListSignature: String? = null
@@ -124,6 +129,16 @@ class MiChatAutomationService : AccessibilityService() {
 
     fun startBot() {
         if (isRunning) return
+        // Lisensi wajib valid; fitur dibatasi sesuai paket (tidak bisa diakali dari UI)
+        if (!LicenseManager.isValid(applicationContext)) {
+            updateStatus("🔒 Lisensi tidak aktif. Buka aplikasi untuk aktivasi.")
+            return
+        }
+        val f = LicenseManager.features(applicationContext)
+        if (!f.genderIcon) enableAnalyzeByIcon = false
+        if (!f.customMessage) defaultGreetingOnly = true
+        maxTargetCount = maxTargetCount.coerceIn(1, f.maxTarget.coerceAtLeast(1))
+        lastLicenseCheck = System.currentTimeMillis()
         isRunning = true
         sentCount = 0
         sentUserSet.clear()
@@ -154,6 +169,16 @@ class MiChatAutomationService : AccessibilityService() {
 
     private fun evaluateAndAct(root: AccessibilityNodeInfo) {
         if (!isRunning || isWaitingCooldown) return
+
+        if (now0() - lastLicenseCheck > LICENSE_CHECK_INTERVAL_MS) {
+            lastLicenseCheck = now0()
+            LicenseManager.refreshIfDue(applicationContext)
+            if (!LicenseManager.isValid(applicationContext)) {
+                updateStatus("🔒 Lisensi habis/tidak aktif. Bot dihentikan.")
+                stopBot()
+                return
+            }
+        }
 
         if (sentCount >= maxTargetCount) {
             updateStatus("Target tercapai ($sentCount/$maxTargetCount). Selesai!")
