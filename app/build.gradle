@@ -24,8 +24,8 @@ android {
 
     buildTypes {
         debug {
-            // Tes lokal: jalankan server di laptop lalu `adb reverse tcp:3077 tcp:3077`
-            buildConfigField "String", "LICENSE_SERVER_URL", "\"http://127.0.0.1:3077\""
+            // Debug juga memakai server produksi (Vercel)
+            buildConfigField "String", "LICENSE_SERVER_URL", "\"https://michatadminpanel.vercel.app\""
         }
         release {
             // Server lisensi produksi (Vercel)
