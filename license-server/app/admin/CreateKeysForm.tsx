@@ -1,78 +1,123 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createKeysAction } from "@/lib/actions";
 import type { Plan } from "@/lib/db";
+
+const DURATIONS = [
+  { v: "1", l: "1 hari" },
+  { v: "3", l: "3 hari" },
+  { v: "7", l: "7 hari" },
+  { v: "30", l: "30 hari" },
+  { v: "90", l: "90 hari" },
+  { v: "365", l: "1 tahun" },
+  { v: "lifetime", l: "Permanen" },
+  { v: "custom", l: "Lainnya" },
+];
 
 export default function CreateKeysForm({ plans }: { plans: Plan[] }) {
   const [state, action, pending] = useActionState(createKeysAction, undefined);
   const [duration, setDuration] = useState("30");
+  const [plan, setPlan] = useState(plans[0]?.id ?? "");
   const [copied, setCopied] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => setCanShare(typeof navigator !== "undefined" && !!navigator.share), []);
+  useEffect(() => {
+    if (state?.keys) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [state]);
+
+  const message = state?.keys
+    ? `Key MiChat Push Auto (${state.summary}):\n${state.keys.join("\n")}\n\nBuka app → masukkan key → Aktifkan.`
+    : "";
 
   const copy = async () => {
-    if (!state?.keys) return;
-    await navigator.clipboard.writeText(state.keys.join("\n"));
+    await navigator.clipboard.writeText(state?.keys?.join("\n") ?? "");
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <div className="card">
-      <h2>➕ Buat key</h2>
-      <form action={action} className="grid">
-        <label>
-          Paket
-          <select name="plan" defaultValue={plans[0]?.id}>
+    <details className="card create" open>
+      <summary>
+        <span>➕ Buat key</span>
+        <span className="muted">untuk pembeli</span>
+      </summary>
+
+      <form action={action} className="create-form">
+        <fieldset>
+          <legend>Paket</legend>
+          <div className="seg">
             {plans.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <label key={p.id} className={plan === p.id ? "on" : ""}>
+                <input type="radio" name="plan" value={p.id} checked={plan === p.id} onChange={() => setPlan(p.id)} />
+                {p.name}
+              </label>
             ))}
-          </select>
-        </label>
-        <label>
-          Durasi
-          <select name="duration" value={duration} onChange={(e) => setDuration(e.target.value)}>
-            <option value="1">1 hari</option>
-            <option value="3">3 hari</option>
-            <option value="7">7 hari</option>
-            <option value="30">30 hari</option>
-            <option value="90">90 hari</option>
-            <option value="365">1 tahun</option>
-            <option value="lifetime">Permanen</option>
-            <option value="custom">Lainnya…</option>
-          </select>
-        </label>
-        {duration === "custom" && (
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Durasi</legend>
+          <div className="seg multi">
+            {DURATIONS.map((d) => (
+              <label key={d.v} className={duration === d.v ? "on" : ""}>
+                <input type="radio" name="duration" value={d.v} checked={duration === d.v} onChange={() => setDuration(d.v)} />
+                {d.l}
+              </label>
+            ))}
+          </div>
+          {duration === "custom" && (
+            <label className="inline-field">
+              Jumlah hari
+              <input name="customDays" type="number" inputMode="numeric" min={1} max={3650} defaultValue={14} />
+            </label>
+          )}
+        </fieldset>
+
+        <div className="two">
           <label>
-            Jumlah hari
-            <input name="customDays" type="number" min={1} max={3650} defaultValue={14} />
+            Jumlah key
+            <input name="qty" type="number" inputMode="numeric" min={1} max={200} defaultValue={1} />
           </label>
-        )}
+          <label>
+            HP per key
+            <input name="maxDevices" type="number" inputMode="numeric" min={1} max={20} defaultValue={1} />
+          </label>
+        </div>
+
         <label>
-          Jumlah key
-          <input name="qty" type="number" min={1} max={200} defaultValue={1} />
+          Catatan
+          <input name="note" maxLength={200} placeholder="Nama / no. WA pembeli (opsional)" />
         </label>
-        <label>
-          Maks. HP per key
-          <input name="maxDevices" type="number" min={1} max={20} defaultValue={1} />
-        </label>
-        <label>
-          Catatan (nama pembeli, dll)
-          <input name="note" maxLength={200} placeholder="opsional" />
-        </label>
-        <label>
-          &nbsp;
-          <button className="primary" disabled={pending}>{pending ? "Membuat…" : "Buat key"}</button>
-        </label>
+
+        <button className="primary block" disabled={pending}>
+          {pending ? "Membuat…" : "Buat key"}
+        </button>
       </form>
 
-      {state?.error && <p className="error">{state.error}</p>}
+      {state?.error && <p className="error" role="alert">{state.error}</p>}
+
       {state?.keys && (
-        <div style={{ marginTop: 14 }}>
-          <p className="ok">✓ {state.summary}. Masa aktif dihitung sejak key pertama kali diaktivasi.</p>
-          <textarea readOnly rows={Math.min(state.keys.length, 8)} value={state.keys.join("\n")} />
-          <button onClick={copy} type="button" style={{ marginTop: 8 }}>{copied ? "Tersalin ✓" : "Salin semua"}</button>
+        <div className="result" ref={resultRef} role="status">
+          <p className="ok">✓ {state.summary}</p>
+          <ul className="result-keys">
+            {state.keys.map((k) => (
+              <li key={k}><code>{k}</code></li>
+            ))}
+          </ul>
+          <div className="result-actions">
+            <button type="button" onClick={copy}>{copied ? "Tersalin ✓" : "⧉ Salin"}</button>
+            {canShare && (
+              <button type="button" className="primary" onClick={() => navigator.share({ text: message }).catch(() => {})}>
+                ↗ Kirim ke pembeli
+              </button>
+            )}
+          </div>
+          <p className="muted">Masa aktif mulai dihitung saat key pertama kali diaktivasi.</p>
         </div>
       )}
-    </div>
+    </details>
   );
 }
